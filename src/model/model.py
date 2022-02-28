@@ -15,11 +15,11 @@ from src.model.som import SOM
 from src.model.activation import Relu, Tanh
 from data.mnist import mnist
 
-class SelfOrganizing_ConvNet:
+class SelfOrganizingConvNet:
 
     def __init__(self, input_dim=(1,28,28), \
-                conv_param={'filter_num':5, 'filter_size':2, 'pad':0, 'stride':1}, \
-                som_param={'Nx':20, 'Ny':20, 'input_vec':[1,5,26,26], 'alpha':0.01},  weight_init_std=0.01) -> None:
+                conv_param={'filter_num':6, 'filter_size':2, 'pad':0, 'stride':1}, \
+                som_param={'map_size':50, 'input_vec':[1,12,24,24], 'alpha':1.0},  weight_init_std=0.01) -> None:
         filter_num = conv_param['filter_num'] # フィルター数
         filter_size = conv_param['filter_size'] # フィルタの縦横
         filter_pad = conv_param['pad'] # パディング
@@ -32,9 +32,8 @@ class SelfOrganizing_ConvNet:
         self.params = {} # 初期化
         self.params['W1'] = weight_init_std * np.random.randn(filter_num, input_dim[0], filter_size, filter_size)
         self.params['b1'] = np.zeros(filter_num)
-        self.params['W2'] = weight_init_std * np.random.randn(filter_num, 10, 4, 4)
-        self.params['b2'] = np.zeros(filter_num)
-
+        self.params['W2'] = weight_init_std * np.random.randn(12, 6, filter_size, filter_size)
+        self.params['b2'] = np.zeros(12)
 
         ## レイヤを格納したディクショナリ変数を作成
         self.layers = OrderedDict() # 順番付きディクショナリ変数を初期化
@@ -44,15 +43,17 @@ class SelfOrganizing_ConvNet:
                                            conv_param['stride'], conv_param['pad'])
         self.layers['Relu1'] = Relu()
         self.layers['Pool1'] = Pooling(pool_h=2, pool_w=2)
-        # self.layers['Conv2'] = Convolution(self.params['W2'], self.params['b2'], \
-        #                                    conv_param['stride'], conv_param['pad'])
-        # self.layers['Relu2'] = Relu()
-        # self.layers['Pool2'] = Pooling(pool_h=2, pool_w=2)
 
-        #Self_organizing層
-        # self.layers['SOM1'] = SOM(som_param['Nx'],som_param['Ny'], \
-        #                                     som_param['input_vec'], som_param['alpha'], 2)
-        # self.layers['Tanh1'] = Tanh()
+        self.layers['Conv2'] = Convolution(self.params['W2'], self.params['b2'], \
+                                           conv_param['stride'], conv_param['pad'])
+        self.layers['Relu2'] = Relu()
+        self.layers['Pool2'] = Pooling(pool_h=2, pool_w=2)
+
+        # Self_organizing層
+        self.layers['SOM1'] = SOM(som_param['map_size'], som_param['alpha'], 2, som_param['input_vec'])
+        self.layers['Tanh1'] = Tanh()
+
+
 
 
     def self_organizing(self, x):
@@ -61,22 +62,24 @@ class SelfOrganizing_ConvNet:
         x = self.layers['Conv1'].forward(x)
         x = self.layers['Relu1'].forward(x)
         x = self.layers['Pool1'].forward(x)
-        # x = self.layers['Conv2'].forward(x)
-        # x = self.layers['Relu2'].forward(x)
-        # x = self.layers['Pool2'].forward(x)
-        # self.layers['SOM1'].update_weight(x)
-        # x = self.layers['SOM1'].forward(x)
-        # x = self.layers['Tanh1'].forward(x)
+        x = self.layers['Conv2'].forward(x)
+        x = self.layers['Relu2'].forward(x)
+        x = self.layers['Pool2'].forward(x)
+        self.layers['SOM1'].self_organization(x)
+        x = self.layers['SOM1'].forward(x)
+        x = self.layers['Tanh1'].forward(x)
 
         return x
 
 if __name__ == '__main__':
-    model = SelfOrganizing_ConvNet()
+    model = SelfOrganizingConvNet()
     mnist_data = mnist()
     mnist_data.Read_data(0)
-    sample_data_0 = mnist_data.data_vec[0,5]
-    sample_data_1 = mnist_data.data_vec[1,4]
-    sample_data_9 = mnist_data.data_vec[8,7]
+    sample_data = []
+    for i in range(10):
+        sample_data.append(mnist_data.data_vec[i,5])
+        sample_data[i]=sample_data[i].reshape(1,1,28,28)
+
 
     # plt.figure()
     # sns.heatmap(sample_data_0.reshape(28,28))
@@ -85,35 +88,28 @@ if __name__ == '__main__':
     # plt.figure()
     # sns.heatmap(sample_data_9.reshape(28,28))
 
+    # plt.show()
+
+
+
+    for class_num in range(10):
+        print(class_num)
+        for _ in tqdm(range(500)):
+            # class_num =  np.random.randint(0,10)
+            num =  np.random.randint(0,100)
+            data = mnist_data.data_vec[class_num,num]
+            data = data.reshape(1,1,28,28)
+            model.self_organizing(data)
+
+    # for layer in model.layers.values():
+    #     for i in range(10):
+    #         sample_data[i] = layer.forward(sample_data[i])
+
+    for i in range(10):
+        plt.figure()
+        weight = model.layers['SOM1'].weight[0,0]
+        weight = weight.reshape(12,24,24)
+        sns.heatmap(weight[i])
+    plt.figure()
+    sns.heatmap(sample_data[i])
     plt.show()
-    sample_data_0 = sample_data_0.reshape(1,1,28,28)
-    sample_data_1 = sample_data_1.reshape(1,1,28,28)
-    sample_data_9 = sample_data_9.reshape(1,1,28,28)
-
-
-
-    # for _ in tqdm(range(10000)):
-    #     class_num =  np.random.randint(0,10)
-    #     num =  np.random.randint(0,100)
-    #     data = mnist_data.data_vec[class_num,num]
-    #     data = data.reshape(1,1,28,28)
-    #     model.self_organizing(data)
-
-    for layer in model.layers.values():
-        sample_data_0 = layer.forward(sample_data_0)
-        sample_data_1 = layer.forward(sample_data_1)
-        sample_data_9 = layer.forward(sample_data_9)
-
-    for i in range(5):
-        plt.figure()
-        sns.heatmap(sample_data_0[0,i])
-        plt.figure()
-        sns.heatmap(sample_data_1[0,i])
-        plt.figure()
-        sns.heatmap(sample_data_9[0,i])
-    # plt.figure()
-    # sns.heatmap(sample_data_1)
-    # plt.figure()
-    # sns.heatmap(sample_data_9)
-    plt.show()
-
