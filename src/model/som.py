@@ -20,6 +20,7 @@ class SOM:
         self.max_dist = np.linalg.norm(np.array((0,0))-np.array((map_size-1,map_size-1)))
 
         self.weight = np.random.uniform(low=-1.0, high=1.0,size=(map_size, map_size, self.input_vec_size))
+        self.neuron_log = np.zeros((map_size,map_size))
 
     def forward(self, x):
         out = []
@@ -34,9 +35,15 @@ class SOM:
         min_idx = self.__return_min_index2(x)
         self.__update_weight2(x, min_idx)
 
+    def evaluation_function(self):
+        # ニューロン利用率を返す
+        return self.neuron_log[self.neuron_log == 1].sum()/(self.map_size*self.map_size)
+
     def __update_weight(self, x, min_idx):
         min_idx_x = int(min_idx / (self.map_size-(2*self.radius))) + self.radius
         min_idx_y = int(min_idx % (self.map_size-(2*self.radius))) + self.radius
+        # 勝者ニューロンを記録
+        self.neuron_log[min_idx_x,min_idx_y] = 1
         for i in range(-self.radius, self.radius):
             for j in range(-self.radius, self.radius):
                 update_value = self.__return_update_value(x, min_idx_x, min_idx_y, i, j)
@@ -45,6 +52,8 @@ class SOM:
     def __update_weight2(self, x, min_idx):
         min_idx_x = int(min_idx / (self.map_size))
         min_idx_y = int(min_idx % (self.map_size))
+        # 勝者ニューロンを記録
+        self.neuron_log[min_idx_x,min_idx_y] += 1
         for i in range(self.map_size):
             for j in range(self.map_size):
                 update_value = self.__return_update_value(x, min_idx_x, min_idx_y, i, j)
@@ -108,6 +117,8 @@ if __name__ == '__main__':
         x1 = layer.forward(x1)
         x2 = layer.forward(x2)
         x3 = layer.forward(x3)
+
+    print(layers['som'].evaluation_function())
 
     print(input_1)
     print(input_2)
