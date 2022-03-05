@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm import tqdm
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from src.model.activation import Relu, Tanh
+from src.model.layer.activation import Tanh
 from collections import OrderedDict
 
 # np.random.seed(seed=56)

@@ -33,6 +33,16 @@ class Tanh():
     def forward(x):
         return np.tanh(x)
 
+class Soft_Max():
+    # ソフトマックス関数を実装
+    @staticmethod
+    def  forward(x):
+        # 式(3.10)の計算
+        c = np.max(x) # 最大値
+        exp_a = np.exp(x - c) # 分子:オーバーフロー対策
+        sum_exp_a = np.sum(exp_a) # 分母
+        out = exp_a / sum_exp_a # 式(3.10)
+        return out
 
 if __name__=='__main__':
     x = np.array([[1,2],[-1, -1]])

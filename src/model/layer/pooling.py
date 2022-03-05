@@ -4,7 +4,9 @@ import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from data.mnist import mnist
-from im_col import im2col, col2im
+from src.model.layer.lib.adam import Adam
+from src.model.layer.lib.im_col import im2col, col2im
+
 
 class Pooling:
 
