@@ -33,5 +33,5 @@ class SoftmaxWithLoss:
         batch_size = self.t.shape[0]
 
         # 順伝播の入力の勾配を計算
-        dx = (self.y - self.t) / batch_size
+        dx = (self.y - self.t) / (dout * batch_size)
         return dx

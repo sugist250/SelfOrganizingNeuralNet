@@ -1,6 +1,3 @@
-import imp
-
-
 import numpy as np
 
 # 交差エントロピー誤差の実装
@@ -21,3 +18,10 @@ def cross_entropy_error(y, t):
 
     # 交差エントロピー誤差を計算:式(4.3)
     return -np.sum(np.log(y[np.arange(batch_size), t] + 1e-7)) / batch_size
+
+if __name__ == '__main__':
+    y = np.array([0.1, 0.05, 0.1, 0.0, 0.05, 0.1, 0.0, 0.6, 0.0, 0.0])
+    t = np.array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0])
+
+    E = cross_entropy_error(y, t)
+    print(E)

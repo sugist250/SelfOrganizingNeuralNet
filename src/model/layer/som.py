@@ -19,21 +19,19 @@ class SOM:
         self.input_vec_size = np.prod(input_vec)
         self.max_dist = np.linalg.norm(np.array((0,0))-np.array((map_size-1,map_size-1)))
 
-        self.weight = np.random.uniform(low=-1.0, high=1.0,size=(map_size, map_size, self.input_vec_size))
+        self.weight = np.random.uniform(low=0.0, high=1.0,size=(map_size, map_size, self.input_vec_size))
         self.neuron_log = np.zeros((map_size,map_size))
 
     def forward(self, x):
-        out = []
-        for i in range(self.map_size):
-            for j in range(self.map_size):
-                out.append(np.dot(self.weight[i,j], x.flatten()))
-        out = np.array(out)
+        x = x.flatten()
+        weight = self.weight.reshape(self.map_size*self.map_size, self.input_vec_size)
+        out = np.dot(weight,x)
         return out.reshape(self.map_size,self.map_size)
 
     def self_organization(self, x):
 
-        min_idx = self.__return_min_index2(x)
-        self.__update_weight2(x, min_idx)
+        min_idx = self.__return_min_index(x)
+        self.__update_weight(x, min_idx)
 
     def evaluation_function(self):
         # ニューロン利用率を返す

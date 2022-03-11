@@ -14,51 +14,44 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from src.model.layer.affine import Afine
 from src.model.layer.activation import Relu
 from src.model.layer.soft_max import SoftmaxWithLoss
-from src.model.layer.convolution import Convolution
-from src.model.layer.pooling import Pooling
 from data.mnist import Mnist
 
-class CA_Model():
+class Affine_Model():
     def __init__(self) -> None:
-        # 順番付きディクショナリ変数を初期化
-        self.cnn_layers =  OrderedDict()
-        self.affine_layers = OrderedDict()
 
+        self.layers = OrderedDict() # 順番付きディクショナリ変数を初期化
 
-        # Conv_Pooling層
-        self.cnn_layers['Conv1'] = Convolution(filter_num=4, input_dim=1, filter_size=2,stride=2)
-        self.cnn_layers['Relu1'] = Relu()
-        self.cnn_layers['Pool1'] = Pooling(pool_h=2, pool_w=2)
-        self.cnn_layers['Conv2'] = Convolution(filter_num=8, input_dim=4, filter_size=3,stride=2)
-        self.cnn_layers['Relu2'] = Relu()
-        self.cnn_layers['Pool2'] = Pooling(pool_h=2, pool_w=2)
-
-
-        # 全結合層
-        self.affine_layers['affine1'] = Afine(25*8, 10)
-        # self.affine_layers['Relu1'] = Relu()
-
-        # self.affine_layers['affine2'] = Afine(100, 10)
+        # 第1層
+        self.layers['affine1'] = Afine(28*28, 3000)
+        self.layers['Relu1'] = Relu()
+        # 第2層
+        self.layers['affine2'] = Afine(3000, 2000)
+        self.layers['Relu1'] = Relu()
+        # 第3層
+        self.layers['affine3'] = Afine(2000, 1000)
+        self.layers['Relu1'] = Relu()
+        # 第4層
+        self.layers['affine4'] = Afine(1000, 500)
+        self.layers['Relu1'] = Relu()
+        # 第5層
+        self.layers['affine5'] = Afine(500, 100)
+        self.layers['Relu1'] = Relu()
+        # 第6層
+        self.layers['affine6'] = Afine(100, 10)
+        # 第7層
+        # self.layers['affine2'] = Afine(100, 10)
         self.last_layer = SoftmaxWithLoss()
 
     def predict(self, x):
         # レイヤごとに順伝播の処理:(未正規化)
-        for cnn_layer in self.cnn_layers.values():
-            x = cnn_layer.forward(x)
-
-        for affine_layer in self.affine_layers.values():
-            x = affine_layer.forward(x)
+        for layer in self.layers.values():
+            x = layer.forward(x)
 
         return x
 
     def forward(self, x, t):
-        # レイヤごとに順伝播の処理:(未正規化)
-        for cnn_layer in self.cnn_layers.values():
-            x = cnn_layer.forward(x)
-
-        for affine_layer in self.affine_layers.values():
-            x = affine_layer.forward(x)
-
+        for layer in self.layers.values():
+            x = layer.forward(x)
         x = self.last_layer.forward(x, t)
         return x
 
@@ -69,8 +62,8 @@ class CA_Model():
         self.__gradient()
 
         # NNのパラメータを更新
-        self.affine_layers['affine1'].update_param()
-        # self.affine_layers['affine2'].update_param()
+        self.layers['affine6'].update_param()
+        # self.layers['affine2'].update_param()
 
 
     def __loss(self):
@@ -83,15 +76,15 @@ class CA_Model():
 
 
         # 各レイヤを逆順に処理
-        layers = list(self.affine_layers.values())
-        layers.reverse()
-        for layer in layers:
-            loss_vec = layer.backward(loss_vec)
+
+        loss_vec = self.layers['affine6'].backward(loss_vec)
+
 
 
 if __name__ == '__main__':
-    ca_model = CA_Model()
+    affine_model = Affine_Model()
     m = Mnist()
+    # mnist データをダウンロード
     (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
     nomalize_train_images = train_images[:]/255
     nomalize_test_images = test_images[:]/255
@@ -104,10 +97,10 @@ if __name__ == '__main__':
                 t_data = np.array(m.retrun_onehot_vec(train_labels[i]))
                 t_data = t_data.reshape(1,10)
                 data = nomalize_train_images[i]
-                data = data.reshape(1,1, 28,28)
-                loss = ca_model.forward(data, t_data)
+                data = data.reshape(1, 28*28)
+                loss = affine_model.forward(data, t_data)
 
-                ca_model.update_param()
+                affine_model.update_param()
         loss_log.append(loss)
 
     with open('./out/loss_log.csv', 'w') as f:
@@ -122,18 +115,23 @@ if __name__ == '__main__':
     plt.legend()
     plt.savefig("./out/loss.png")
     count = 0
-
+    ans = np.zeros((10,10),dtype=int)
     for i in range(test_images.shape[0]):
-        # class_num =  np.random.randint(0,10)
-        # num = np.random.randint(0,100)
         t_data = np.array(m.retrun_onehot_vec(test_labels[i]))
         t_data = t_data.reshape(1,10)
         data = nomalize_test_images[i]
-        data = data.reshape(1, 1,28,28)
-        predict = ca_model.predict(data)
+        data = data.reshape(1, 28*28)
+        predict = affine_model.predict(data)
         predict_num = np.argmax(predict)
+        ans[predict_num][test_labels[i]] += 1
         print(f'pridict:{predict_num}, label:{test_labels[i]}')
         if predict_num == test_labels[i]:
             count += 1
 
     print(count/test_images.shape[0])
+    for i in range(10):
+        print(f'{i}:{ans[i]}')
+
+
+
+

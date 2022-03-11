@@ -4,7 +4,7 @@ import numpy as np
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from data.mnist import mnist
+from data.mnist import Mnist
 from src.model.layer.lib.adam import Adam
 from src.model.layer.lib.im_col import im2col, col2im
 
@@ -12,7 +12,7 @@ class Convolution:
 
     # インスタンス変数の定義
     def __init__(self, filter_num,  input_dim, filter_size, stride=1, pad=0):
-        self.weight_init_std=0.01
+        self.weight_init_std=1
         self.W = self.weight_init_std * np.random.randn(filter_num, input_dim, filter_size, filter_size)
         self.b = np.zeros(filter_num)
         self.stride = stride # ストライド
