@@ -1,14 +1,6 @@
-from itertools import count
 import sys
 import os
-import numpy as np
-import csv
 from collections import OrderedDict
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-from keras.datasets import mnist
-
-
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from src.model.layer.affine import Afine
@@ -16,7 +8,7 @@ from src.model.layer.activation import Relu
 from src.model.layer.soft_max import SoftmaxWithLoss
 from src.model.layer.convolution import Convolution
 from src.model.layer.pooling import Pooling
-from data.mnist import Mnist
+
 
 class CA_Model():
     def __init__(self) -> None:
@@ -36,9 +28,6 @@ class CA_Model():
 
         # 全結合層
         self.affine_layers['affine1'] = Afine(25*8, 10)
-        # self.affine_layers['Relu1'] = Relu()
-
-        # self.affine_layers['affine2'] = Afine(100, 10)
         self.last_layer = SoftmaxWithLoss()
 
     def predict(self, x):
@@ -70,19 +59,15 @@ class CA_Model():
 
         # NNのパラメータを更新
         self.affine_layers['affine1'].update_param()
-        # self.affine_layers['affine2'].update_param()
 
 
     def __loss(self):
+        # 損失関数
         return self.last_layer.backward()
 
-     # 勾配計算メソッドの定義
     def __gradient(self):
-        # ニューロン非使用率を計算
+        #勾配を計算
         loss_vec = self.__loss()
-
-
-        # 各レイヤを逆順に処理
         layers = list(self.affine_layers.values())
         layers.reverse()
         for layer in layers:
@@ -90,50 +75,4 @@ class CA_Model():
 
 
 if __name__ == '__main__':
-    ca_model = CA_Model()
-    m = Mnist()
-    (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
-    nomalize_train_images = train_images[:]/255
-    nomalize_test_images = test_images[:]/255
-    epoch = 1000
-    loss_log = []
-    for _ in tqdm(range(epoch)):
-        for i in range(50):
-                # class_num =  np.random.randint(0,10)
-                # num = np.random.randint(0,100)
-                t_data = np.array(m.retrun_onehot_vec(train_labels[i]))
-                t_data = t_data.reshape(1,10)
-                data = nomalize_train_images[i]
-                data = data.reshape(1,1, 28,28)
-                loss = ca_model.forward(data, t_data)
-
-                ca_model.update_param()
-        loss_log.append(loss)
-
-    with open('./out/loss_log.csv', 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(loss_log)
-
-    x = np.linspace(0, 1, epoch)
-    # プロット
-    plt.plot(x, loss_log, label="loss")
-
-    # 凡例の表示
-    plt.legend()
-    plt.savefig("./out/loss.png")
-    count = 0
-
-    for i in range(test_images.shape[0]):
-        # class_num =  np.random.randint(0,10)
-        # num = np.random.randint(0,100)
-        t_data = np.array(m.retrun_onehot_vec(test_labels[i]))
-        t_data = t_data.reshape(1,10)
-        data = nomalize_test_images[i]
-        data = data.reshape(1, 1,28,28)
-        predict = ca_model.predict(data)
-        predict_num = np.argmax(predict)
-        print(f'pridict:{predict_num}, label:{test_labels[i]}')
-        if predict_num == test_labels[i]:
-            count += 1
-
-    print(count/test_images.shape[0])
+    pass

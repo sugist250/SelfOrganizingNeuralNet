@@ -19,7 +19,7 @@ from src.model.layer.pooling import Pooling
 from src.model.layer.soft_max import SoftmaxWithLoss
 from data.mnist import Mnist
 
-class SA_Model():
+class CSA_Model():
     def __init__(self) -> None:
 
         self.cnn_layers =  OrderedDict()
@@ -100,7 +100,7 @@ class SA_Model():
 
 
 if __name__ == '__main__':
-    sa_model = SA_Model()
+    sa_model = CSA_Model()
     m = Mnist()
     # mnist データをダウンロード
     (train_images, train_labels), (test_images, test_labels) = mnist.load_data()

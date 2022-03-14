@@ -24,10 +24,10 @@ class SA_Model():
         self.affine_layers = OrderedDict() # 順番付きディクショナリ変数を初期化
 
         # 第1層
-        self.som_layers['SOM1'] = SOM(map_size=50, alpha=0.01, radius=3, input_vec=28*28)
+        self.som_layers['SOM1'] = SOM(map_size=30, alpha=0.01, radius=3, input_vec=28*28)
         self.som_layers['Relu1'] = Relu()
         # 第2層
-        self.affine_layers['affine1'] = Afine(50*50, 10)
+        self.affine_layers['affine1'] = Afine(30*30, 10)
         self.last_layer = SoftmaxWithLoss()
 
     # 自己組織化
@@ -39,7 +39,7 @@ class SA_Model():
         # レイヤごとに順伝播の処理:(未正規化)
         for layer in self.som_layers.values():
             x = layer.forward(x)
-        x = x.reshape(1,50*50)
+        x = x.reshape(1,30*30)
 
         for layer in self.affine_layers.values():
             x = layer.forward(x)
@@ -49,7 +49,7 @@ class SA_Model():
     def forward(self, x, t):
         for layer in self.som_layers.values():
             x = layer.forward(x)
-        x = x.reshape(1,50*50)
+        x = x.reshape(1,30*30)
         for layer in self.affine_layers.values():
             x = layer.forward(x)
         x = self.last_layer.forward(x, t)
