@@ -10,10 +10,10 @@ from tqdm import tqdm
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from src.model.convolution import Convolution
-from src.model.pooling import Pooling
-from src.model.som import SOM
-from src.model.activation import Relu, Tanh
+from model.layer.convolution import Convolution
+from model.layer.pooling import Pooling
+from model.layer.som import SOM
+from model.layer.activation import Relu, Tanh
 from data.mnist import mnist
 
 class SelfOrganizingConvNet:

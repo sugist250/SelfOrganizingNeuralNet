@@ -4,7 +4,7 @@ import numpy as np
 class Adam:
 
     # インスタンス変数を定義
-    def __init__(self, lr=0.001, beta1=0.9, beta2=0.999):
+    def __init__(self, lr=0.01, beta1=0.9, beta2=0.999):
         self.lr = lr # 学習率
         self.beta1 = beta1 # mの減衰率
         self.beta2 = beta2 # vの減衰率
@@ -29,3 +29,22 @@ class Adam:
         updated_param -= lr_t * self.m / (np.sqrt(self.v) + 1e-7) # 式(6)
 
         return updated_param
+
+if __name__ == '__main__':
+    adam = Adam()
+    def function(x):
+        y = x**2
+        return y
+    def d_function(x):
+        dy = 2*x
+        return dy
+
+    x = np.array([10.0])
+    dy =  d_function(np.array([10.0]))
+    print(x, dy)
+    for _ in range(50000):
+        # パラメータを更新
+        x = adam.update(x, dy)
+        dy =  d_function(x)
+        print(x, dy)
+
