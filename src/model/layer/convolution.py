@@ -4,15 +4,17 @@ import numpy as np
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from data.mnist import mnist
-from im_col import im2col, col2im
+from data.mnist import Mnist
+from src.model.layer.lib.adam import Adam
+from src.model.layer.lib.im_col import im2col, col2im
 
 class Convolution:
 
     # インスタンス変数の定義
-    def __init__(self, W, b, stride=1, pad=0):
-        self.W = W # フィルター(重み)
-        self.b = b # バイアス
+    def __init__(self, filter_num,  input_dim, filter_size, stride=1, pad=0):
+        self.weight_init_std=0.01
+        self.W = self.weight_init_std * np.random.randn(filter_num, input_dim, filter_size, filter_size)
+        self.b = np.zeros(filter_num)
         self.stride = stride # ストライド
         self.pad = pad # パディング
 
@@ -24,6 +26,10 @@ class Convolution:
         # 勾配に関する変数を初期化
         self.dW = None # フィルター(重み)に関する勾配
         self.db = None # バイアスに関する勾配
+
+        # 最適化手法のインスタンスを作成
+        self.optimizer_w = Adam(lr=0.001)
+        self.optimizer_b = Adam(lr=0.001)
 
     # 順伝播メソッドの定義
     def forward(self, x):
@@ -64,6 +70,11 @@ class Convolution:
         dx = col2im(dcol, self.x.shape, FH, FW, self.stride, self.pad) # 本来の形状に変換
 
         return dx
+
+    def update_param(self):
+        self.W = self.optimizer_w.update(self.W, self.dW)
+        self.b = self.optimizer_b.update(self.b, self.db)
+
 
 
 
