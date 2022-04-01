@@ -18,16 +18,16 @@ class CA_Model():
 
 
         # Conv_Pooling層
-        self.cnn_layers['Conv1'] = Convolution(filter_num=4, input_dim=1, filter_size=2,stride=2)
+        self.cnn_layers['Conv1'] = Convolution(filter_num=8, input_dim=1, filter_size=3,stride=1)
         self.cnn_layers['Relu1'] = Relu()
-        self.cnn_layers['Pool1'] = Pooling(pool_h=2, pool_w=2)
-        self.cnn_layers['Conv2'] = Convolution(filter_num=8, input_dim=4, filter_size=3,stride=2)
+        self.cnn_layers['Pool1'] = Pooling(pool_h=2, pool_w=2, stride=2)
+        self.cnn_layers['Conv2'] = Convolution(filter_num=16, input_dim=8, filter_size=3,stride=1)
         self.cnn_layers['Relu2'] = Relu()
-        self.cnn_layers['Pool2'] = Pooling(pool_h=2, pool_w=2)
+        self.cnn_layers['Pool2'] = Pooling(pool_h=2, pool_w=2, stride=2)
 
 
         # 全結合層
-        self.affine_layers['affine1'] = Afine(25*8, 10)
+        self.affine_layers['affine1'] = Afine(50*8, 10)
         self.last_layer = SoftmaxWithLoss()
 
     def predict(self, x):

@@ -9,18 +9,18 @@ from tqdm import tqdm
 
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from model.layer.convolution import Convolution
-from model.layer.pooling import Pooling
-from model.layer.som import SOM
-from model.layer.activation import Relu, Tanh
-from data.mnist import mnist
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+from src.model.layer.convolution import Convolution
+from src.model.layer.pooling import Pooling
+from src.model.layer.som import SOM
+from src.model.layer.activation import Relu, Tanh
+from data.mnist import Mnist
 
 class SelfOrganizingConvNet:
 
     def __init__(self, input_dim=(1,28,28), \
                 conv_param={'filter_num':12, 'filter_size':3, 'pad':0, 'stride':1}, \
-                som_param={'map_size':40, 'input_vec':[1,12,22,22], 'alpha':1.0}) -> None:
+                som_param={'map_size':40, 'input_vec':[1,12,25,25], 'alpha':1.0}) -> None:
         filter_num = conv_param['filter_num'] # フィルター数
         filter_size = conv_param['filter_size'] # フィルタの縦横
         self.som_input_size = som_param['input_vec']
@@ -34,10 +34,7 @@ class SelfOrganizingConvNet:
                                            conv_param['stride'], conv_param['pad'])
         self.cnn_layers['Relu1'] = Relu()
         self.cnn_layers['Pool1'] = Pooling(pool_h=2, pool_w=2)
-        self.cnn_layers['Conv2'] = Convolution(filter_num, 12, filter_size, \
-                                           conv_param['stride'], conv_param['pad'])
-        self.cnn_layers['Relu2'] = Relu()
-        self.cnn_layers['Pool2'] = Pooling(pool_h=2, pool_w=2)
+
 
         # Self_organizing層
         self.som_layers['SOM1'] = SOM(som_param['map_size'], som_param['alpha'], 2, som_param['input_vec'])
@@ -121,7 +118,7 @@ class SelfOrganizingConvNet:
 
 if __name__ == '__main__':
     model = SelfOrganizingConvNet()
-    mnist_data = mnist()
+    mnist_data = Mnist()
     mnist_data.Read_data(0)
     sample_data = []
     for i in range(10):
@@ -132,7 +129,7 @@ if __name__ == '__main__':
 
 
 
-    for step in tqdm(range(1000)):
+    for step in tqdm(range(10)):
 
         for class_num in range(10):
             # class_num =  np.random.randint(0,10)
@@ -156,7 +153,7 @@ if __name__ == '__main__':
 
     for i in range(10):
         fig = plt.figure()
-        sns.heatmap(sample_data[i])
+        sns.heatmap(sample_data[i],vmin=-1.0, vmax=1.0)
         fig.savefig(f"./out/img_{i}.png")
 
 

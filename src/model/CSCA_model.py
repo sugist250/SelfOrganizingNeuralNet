@@ -28,25 +28,25 @@ class CSCA_Model():
         self.affine_layers = OrderedDict()
 
         # Conv_Pooling層
-        self.cnn_layers1['Conv1'] = Convolution(filter_num=4, input_dim=1, filter_size=2,stride=2)
+        self.cnn_layers1['Conv1'] = Convolution(filter_num=8, input_dim=1, filter_size=3,stride=1)
         self.cnn_layers1['Relu1'] = Relu()
-        self.cnn_layers1['Pool1'] = Pooling(pool_h=2, pool_w=2)
-        self.cnn_layers1['Conv2'] = Convolution(filter_num=8, input_dim=4, filter_size=3,stride=2)
+        self.cnn_layers1['Pool1'] = Pooling(pool_h=2, pool_w=2, stride=2)
+        self.cnn_layers1['Conv2'] = Convolution(filter_num=16, input_dim=8, filter_size=3,stride=1)
         self.cnn_layers1['Relu2'] = Relu()
-        self.cnn_layers1['Pool2'] = Pooling(pool_h=2, pool_w=2)
+        self.cnn_layers1['Pool2'] = Pooling(pool_h=2, pool_w=2, stride=2)
         # SOM層
-        self.som_layers['SOM1'] = SOM(map_size=30, alpha=0.01, radius=3, input_vec=25*8)
+        self.som_layers['SOM1'] = SOM(map_size=30, alpha=0.01, radius=3, input_vec=50*8)
         self.som_layers['Relu1'] = Relu()
 
         # Conv_Pooling層
-        self.cnn_layers2['Conv3'] = Convolution(filter_num=4, input_dim=1, filter_size=3,stride=1)
+        self.cnn_layers2['Conv3'] = Convolution(filter_num=8, input_dim=1, filter_size=3,stride=1)
         self.cnn_layers2['Relu3'] = Relu()
-        self.cnn_layers2['Pool3'] = Pooling(pool_h=2, pool_w=2)
-        self.cnn_layers2['Conv4'] = Convolution(filter_num=8, input_dim=4, filter_size=3,stride=1)
+        self.cnn_layers2['Pool3'] = Pooling(pool_h=2, pool_w=2, stride=2)
+        self.cnn_layers2['Conv4'] = Convolution(filter_num=16, input_dim=8, filter_size=3,stride=1)
         self.cnn_layers2['Relu4'] = Relu()
-        self.cnn_layers2['Pool4'] = Pooling(pool_h=2, pool_w=2)
+        self.cnn_layers2['Pool4'] = Pooling(pool_h=2, pool_w=2, stride=2)
         # 第2層
-        self.affine_layers['affine1'] = Afine(24*24*8, 10)
+        self.affine_layers['affine1'] = Afine(576, 10)
         self.last_layer = SoftmaxWithLoss()
 
     # 自己組織化
@@ -65,7 +65,7 @@ class CSCA_Model():
         x = x.reshape(1,1,30,30)
         for layer in self.cnn_layers2.values():
             x = layer.forward(x)
-        x = x.reshape(1,24*24*8)
+        x = x.reshape(1,576)
 
         for layer in self.affine_layers.values():
             x = layer.forward(x)
@@ -80,7 +80,7 @@ class CSCA_Model():
         x = x.reshape(1,1,30,30)
         for layer in self.cnn_layers2.values():
             x = layer.forward(x)
-        x = x.reshape(1,24*24*8)
+        x = x.reshape(1,576)
 
         for layer in self.affine_layers.values():
             x = layer.forward(x)

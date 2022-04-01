@@ -7,15 +7,15 @@ from keras.datasets import mnist
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
-from src.model.CSCA_model import CSCA_Model
+from src.model.affine_model import Affine_Model
 from controller.lib.log import Log
 from controller.lib.evaluation import Evaluation
 from data.mnist import Mnist
 
 
-def csca_model_run(epoch=100):
+def affine_model_run(epoch=100):
     # CAモデルを作成
-    csca_model = CSCA_Model()
+    affine_model = Affine_Model()
     # mnistデータセット
     m = Mnist()
     (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
@@ -45,14 +45,6 @@ def csca_model_run(epoch=100):
     test_evalution = Evaluation(10)
 
 
-    print('self organizing......')
-    for _ in tqdm(range(5)):
-        for i in range(train_data_num):
-                t_data = np.array(m.retrun_onehot_vec(t_labels[i]))
-                t_data = t_data.reshape(1,10)
-                data = nomalize_train_images[i]
-                data = data.reshape(1,1,28,28)
-                csca_model.self_organizing(data)
 
     for _ in tqdm(range(epoch)):
         # ロスの合計値の初期化
@@ -66,17 +58,18 @@ def csca_model_run(epoch=100):
             t_data = np.array(m.retrun_onehot_vec(t_labels[i]))
             t_data = t_data.reshape(1,10)
             data = nomalize_train_images[i]
-            data = data.reshape(1,1,28,28)
-            sum_loss += csca_model.forward(data, t_data)
+            data = data.reshape(1,28*28)
+            sum_loss += affine_model.forward(data, t_data)
 
             # パラメータの更新
-            csca_model.update_param()
+            affine_model.update_param()
 
             # 予測
-            predict = csca_model.predict(data)
+            predict = affine_model.predict(data)
             predict_num = np.argmax(predict)
             # 混合行列
             train_evalution.add_confusion_matrix(predict_num, t_labels[i])
+
 
 
         # モデルの評価
@@ -90,10 +83,10 @@ def csca_model_run(epoch=100):
             t_data = np.array(m.retrun_onehot_vec(test_labels[i]))
             t_data = t_data.reshape(1,10)
             data = nomalize_test_images[i]
-            data = data.reshape(1,1,28,28)
+            data = data.reshape(1,28*28)
 
             # 予測
-            predict = csca_model.predict(data)
+            predict = affine_model.predict(data)
             predict_num = np.argmax(predict)
             # 混合行列
             test_evalution.add_confusion_matrix(predict_num, test_labels[i])
@@ -103,10 +96,10 @@ def csca_model_run(epoch=100):
         accuracy, average_recall, average_precision, average_F_value_A, average_F_value_B = test_evalution.evaluation_model()
         test_log.add_log(average_loss, accuracy, average_recall, average_precision, average_F_value_A, average_F_value_B)
 
-    train_log.export_csv('csca_model_train_f')
-    test_log.export_csv('csca_model_test_f')
+    train_log.export_csv('affine_model_train_f')
+    test_log.export_csv('affine_model_test_f')
 
 
 
 if __name__ == '__main__':
-    csca_model_run(epoch=10)
+    ca_model_run(epoch=100)

@@ -27,14 +27,14 @@ class CSA_Model():
         self.affine_layers = OrderedDict() # 順番付きディクショナリ変数を初期化
 
         # Conv_Pooling層
-        self.cnn_layers['Conv1'] = Convolution(filter_num=4, input_dim=1, filter_size=2,stride=2)
-        self.cnn_layers['Relu1'] = Relu()
-        self.cnn_layers['Pool1'] = Pooling(pool_h=2, pool_w=2)
-        self.cnn_layers['Conv2'] = Convolution(filter_num=8, input_dim=4, filter_size=3,stride=2)
-        self.cnn_layers['Relu2'] = Relu()
-        self.cnn_layers['Pool2'] = Pooling(pool_h=2, pool_w=2)
+        self.cnn_layers['Conv1'] = Convolution(filter_num=8, input_dim=1, filter_size=3,stride=1)
+        self.cnn_layers['Relu1'] = Tanh()
+        self.cnn_layers['Pool1'] = Pooling(pool_h=2, pool_w=2, stride=2)
+        self.cnn_layers['Conv2'] = Convolution(filter_num=16, input_dim=8, filter_size=3,stride=1)
+        self.cnn_layers['Tanh'] = Tanh()
+        self.cnn_layers['Pool2'] = Pooling(pool_h=2, pool_w=2, stride=2)
         # SOM層
-        self.som_layers['SOM1'] = SOM(map_size=30, alpha=0.01, radius=3, input_vec=25*8)
+        self.som_layers['SOM1'] = SOM(map_size=30, alpha=0.01, radius=3, input_vec=50*8)
         self.som_layers['Relu1'] = Relu()
         # 第2層
         self.affine_layers['affine1'] = Afine(30*30, 10)

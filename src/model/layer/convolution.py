@@ -12,7 +12,7 @@ class Convolution:
 
     # インスタンス変数の定義
     def __init__(self, filter_num,  input_dim, filter_size, stride=1, pad=0):
-        self.weight_init_std=0.01
+        self.weight_init_std=1
         self.W = self.weight_init_std * np.random.randn(filter_num, input_dim, filter_size, filter_size)
         self.b = np.zeros(filter_num)
         self.stride = stride # ストライド

@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 class Relu():
     # 初期化メソッド
@@ -43,6 +44,12 @@ class Soft_Max():
         sum_exp_a = np.sum(exp_a) # 分母
         out = exp_a / sum_exp_a # 式(3.10)
         return out
+
+class Sigmoid():
+
+    @staticmethod
+    def forward(x):
+        return (1 / (1 + math.e**-x))
 
 if __name__=='__main__':
     x = np.array([[1,2],[-1, -1]])
