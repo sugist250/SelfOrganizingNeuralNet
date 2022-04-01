@@ -19,7 +19,7 @@ class SOM:
         self.input_vec_size = np.prod(input_vec)
         self.max_dist = np.linalg.norm(np.array((0,0))-np.array((map_size-1,map_size-1)))
 
-        self.weight = np.random.uniform(low=0.0, high=1.0,size=(map_size, map_size, self.input_vec_size))
+        self.weight = np.random.uniform(low=-1.0, high=1.0,size=(map_size, map_size, self.input_vec_size))
         self.neuron_log = np.zeros((map_size,map_size))
 
     def forward(self, x):
@@ -35,7 +35,14 @@ class SOM:
 
     def evaluation_function(self):
         # ニューロン利用率を返す
+        neuron_ratio =  self.neuron_log[self.neuron_log == 1].sum()/(self.map_size*self.map_size)
         return self.neuron_log[self.neuron_log == 1].sum()/(self.map_size*self.map_size)
+
+    def init_neuron_log(self):
+        self.neuron_log = np.zeros((self.map_size,self.map_size))
+
+    def init_weight(self):
+        self.weight = np.random.uniform(low=-1.0, high=1.0,size=(self.map_size, self.map_size, self.input_vec_size))
 
     def __update_weight(self, x, min_idx):
         min_idx_x = int(min_idx / (self.map_size-(2*self.radius))) + self.radius

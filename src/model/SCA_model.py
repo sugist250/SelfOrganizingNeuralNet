@@ -13,21 +13,32 @@ from keras.datasets import mnist
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from src.model.layer.affine import Afine
 from src.model.layer.som import SOM
-from src.model.layer.activation import Tanh, Relu, Sigmoid
+from src.model.layer.activation import Tanh, Relu
+from src.model.layer.convolution import Convolution
+from src.model.layer.pooling import Pooling
 from src.model.layer.soft_max import SoftmaxWithLoss
 from data.mnist import Mnist
 
-class SA_Model():
+class SCA_Model():
     def __init__(self) -> None:
 
+        self.cnn_layers =  OrderedDict()
         self.som_layers = OrderedDict() # 順番付きディクショナリ変数を初期化
         self.affine_layers = OrderedDict() # 順番付きディクショナリ変数を初期化
-        self.map_size = 30
-        # 第1層
-        self.som_layers['SOM1'] = SOM(map_size=self.map_size, alpha=0.01, radius=3, input_vec=28*28)
-        self.som_layers['Tanh'] = Relu()
+
+
+        # SOM層
+        self.som_layers['SOM1'] = SOM(map_size=30, alpha=0.01, radius=3, input_vec=28*28)
+        self.som_layers['Relu1'] = Relu()
+        # Conv_Pooling層
+        self.cnn_layers['Conv1'] = Convolution(filter_num=8, input_dim=1, filter_size=3,stride=1)
+        self.cnn_layers['Relu1'] = Relu()
+        self.cnn_layers['Pool1'] = Pooling(pool_h=2, pool_w=2, stride=2)
+        self.cnn_layers['Conv2'] = Convolution(filter_num=16, input_dim=8, filter_size=3,stride=1)
+        self.cnn_layers['Tanh'] = Relu()
+        self.cnn_layers['Pool2'] = Pooling(pool_h=2, pool_w=2, stride=2)
         # 第2層
-        self.affine_layers['affine1'] = Afine(self.map_size*self.map_size, 10)
+        self.affine_layers['affine1'] = Afine(576, 10)
         self.last_layer = SoftmaxWithLoss()
 
     # 自己組織化
@@ -37,9 +48,13 @@ class SA_Model():
 
     def predict(self, x):
         # レイヤごとに順伝播の処理:(未正規化)
+
         for layer in self.som_layers.values():
             x = layer.forward(x)
-        x = x.reshape(1,self.map_size*self.map_size)
+        x = x.reshape(1,1,30,30)
+        for layer in self.cnn_layers.values():
+            x = layer.forward(x)
+        x = x.reshape(1,576)
 
         for layer in self.affine_layers.values():
             x = layer.forward(x)
@@ -49,7 +64,10 @@ class SA_Model():
     def forward(self, x, t):
         for layer in self.som_layers.values():
             x = layer.forward(x)
-        x = x.reshape(1,self.map_size*self.map_size)
+        x = x.reshape(1,1,30,30)
+        for layer in self.cnn_layers.values():
+            x = layer.forward(x)
+        x = x.reshape(1,576)
         for layer in self.affine_layers.values():
             x = layer.forward(x)
         x = self.last_layer.forward(x, t)
@@ -84,7 +102,7 @@ class SA_Model():
 
 
 if __name__ == '__main__':
-    sa_model = SA_Model()
+    sa_model = CSA_Model()
     m = Mnist()
     # mnist データをダウンロード
     (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
@@ -94,12 +112,12 @@ if __name__ == '__main__':
     loss_log = []
 
     print('self organizing......')
-    for _ in tqdm(range(100)):
+    for _ in tqdm(range(1000)):
         for i in range(50):
                 t_data = np.array(m.retrun_onehot_vec(train_labels[i]))
                 t_data = t_data.reshape(1,10)
                 data = nomalize_train_images[i]
-                data = data.reshape(28*28)
+                data = data.reshape(1,1,28,28)
                 sa_model.self_organizing(data)
 
     print('leaning......')
@@ -108,7 +126,7 @@ if __name__ == '__main__':
                 t_data = np.array(m.retrun_onehot_vec(train_labels[i]))
                 t_data = t_data.reshape(1,10)
                 data = nomalize_train_images[i]
-                data = data.reshape(28*28)
+                data = data.reshape(1,1,28,28)
                 # sa_model.self_organizing(data)
                 loss = sa_model.forward(data, t_data)
 
@@ -134,7 +152,7 @@ if __name__ == '__main__':
         t_data = np.array(m.retrun_onehot_vec(test_labels[i]))
         t_data = t_data.reshape(1,10)
         data = nomalize_test_images[i]
-        data = data.reshape(28*28)
+        data = data.reshape(1,1,28,28)
         predict = sa_model.predict(data)
         predict_num = np.argmax(predict)
         print(f'pridict:{predict_num}, label:{test_labels[i]}')

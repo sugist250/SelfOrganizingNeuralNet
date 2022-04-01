@@ -7,6 +7,7 @@ from src.controller.model_run.ca_run import ca_model_run
 from src.controller.model_run.sa_run import sa_model_run
 from src.controller.model_run.csa_run import csa_model_run
 from src.controller.model_run.csca_run import csca_model_run
+from src.controller.model_run.affine_run import affine_model_run
 
 def multi_run():
     # 関数を実行するプロセスの準備
@@ -14,12 +15,14 @@ def multi_run():
     sa = multiprocessing.Process(name="sa", target=sa_model_run)
     csa = multiprocessing.Process(name="csa", target=csa_model_run)
     csca = multiprocessing.Process(name="csca", target=csca_model_run)
+    af = multiprocessing.Process(name="af", target=affine_model_run)
 
     # プロセスの開始
     ca.start()
     sa.start()
     csa.start()
     csca.start()
+    af.start()
 
 
 
